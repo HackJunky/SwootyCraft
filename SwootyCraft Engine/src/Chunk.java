@@ -11,8 +11,11 @@ public class Chunk implements Serializable{
 	private int ID = -1;
 	private ArrayList<Block> queuedChanges;
 	private ArrayList<WorldDrop> queuedDrops;
+	private int seamlessHeight;
+	int terrainHeight;
 
-	public Chunk(int id, boolean loaded) {
+	public Chunk(int id, boolean loaded, int sHeight) {
+		seamlessHeight = sHeight;
 		ID = id;
 		chunkData = new Block[SwootyUtils.CHUNK_WIDTH][SwootyUtils.CHUNK_HEIGHT];
 		dropData = new WorldDrop[SwootyUtils.CHUNK_WIDTH][SwootyUtils.CHUNK_HEIGHT];
@@ -26,14 +29,18 @@ public class Chunk implements Serializable{
 	public void setData(Block[][] b) {
 		chunkData = b;
 	}
-	
+
+	public int getSeamlessHeight() {
+		return seamlessHeight;
+	}
+
 	public void generateTerrain() {
 		parseAir();
 		parseBasic();
 		parseOre();
-		//		parseWater();
+		parseWater();
 		parseStructures();
-		//		parseLava();
+		parseLava();
 	}
 
 	public void parseAir() {
@@ -49,7 +56,11 @@ public class Chunk implements Serializable{
 	}
 
 	public void parseBasic() {
-		int terrainHeight = (int)(SwootyUtils.CHUNK_HEIGHT * (1.0 - SwootyUtils.CHUNK_PERCENT_AIR));
+		if (seamlessHeight == -1) {
+			terrainHeight = (int)(SwootyUtils.CHUNK_HEIGHT - (SwootyUtils.CHUNK_HEIGHT * (1.0 - SwootyUtils.CHUNK_PERCENT_AIR)));
+		}else {
+			terrainHeight = seamlessHeight;
+		}
 		for (int x = 0; x < SwootyUtils.CHUNK_WIDTH; x++) {
 			for (int y = terrainHeight; y < SwootyUtils.CHUNK_HEIGHT; y++) {
 				chunkData[x][y] = new Block(SwootyUtils.BlockType.STONE, ID, new Point(x, y));
@@ -70,25 +81,26 @@ public class Chunk implements Serializable{
 					chunkData[x][y] = new Block(SwootyUtils.BlockType.AIR, ID, new Point(x, y));
 				}else if (y == terrainHeight) {
 					chunkData[x][y] = new Block(SwootyUtils.BlockType.GRASS, ID, new Point(x, y));
+					seamlessHeight = y;
 				}else if (y < terrainHeight + (new Random().nextInt(height) + 8)) {
 					chunkData[x][y] = new Block(SwootyUtils.BlockType.DIRT, ID, new Point(x, y));
 				}else if (y > SwootyUtils.CHUNK_HEIGHT - 2){
 					chunkData[x][y] = new Block(SwootyUtils.BlockType.BEDROCK, ID, new Point(x, y));
 				}
-
 			}
-			if (terrainHeight - (int)(SwootyUtils.CHUNK_HEIGHT * (1.0 - SwootyUtils.CHUNK_PERCENT_AIR)) > new Random().nextInt(6)) {
+			if (terrainHeight - (int)(SwootyUtils.CHUNK_HEIGHT - (SwootyUtils.CHUNK_HEIGHT * (1.0 - SwootyUtils.CHUNK_PERCENT_AIR))) > new Random().nextInt(6)) {
 				rise = false;
-			}else if (terrainHeight - (int)(SwootyUtils.CHUNK_HEIGHT * (1.0 - SwootyUtils.CHUNK_PERCENT_AIR)) < new Random().nextInt(6) * -1) {
+			}else if (terrainHeight - (int)(SwootyUtils.CHUNK_HEIGHT - (SwootyUtils.CHUNK_HEIGHT * (1.0 - SwootyUtils.CHUNK_PERCENT_AIR))) < new Random().nextInt(6) * -1) {
 				rise = true;
 			}
 		}
+
 	}
 
 	public void parseOre() {
 		int oreSize = new Random().nextInt(SwootyUtils.ORE_CLUSTER_SIZE_MAX) + SwootyUtils.ORE_CLUSTER_SIZE_MIN;
 		int[][] oreMap = new int[oreSize][oreSize];
-		for (int y = (int)(SwootyUtils.CHUNK_HEIGHT * (1 - SwootyUtils.CHUNK_PERCENT_AIR) + 10); y < SwootyUtils.CHUNK_HEIGHT - oreSize; y += oreSize * new Random().nextInt(6)) {
+		for (int y = (int)(terrainHeight + 10); y < SwootyUtils.CHUNK_HEIGHT - oreSize; y += oreSize * new Random().nextInt(6)) {
 			for (int x = oreSize + new Random().nextInt(SwootyUtils.CHUNK_WIDTH / 4); x < SwootyUtils.CHUNK_WIDTH - oreSize - new Random().nextInt(SwootyUtils.CHUNK_WIDTH / 4); x += oreSize * new Random().nextInt(6)) {
 				int theChosenOre = new Random().nextInt(50);
 				for (int a = 0; a < oreSize; a++) {
@@ -167,56 +179,125 @@ public class Chunk implements Serializable{
 		}
 
 		//Dungeons
+		int oreSize = SwootyUtils.DUNGEON_PATTERN.length;
+		int[][] dungeonMap = new int[oreSize][oreSize];
+		for (int y = (int)(terrainHeight + 10 + new Random().nextInt(SwootyUtils.CHUNK_HEIGHT / 8)); y < SwootyUtils.CHUNK_HEIGHT - oreSize; y += oreSize * new Random().nextInt(6)) {
+			for (int x = oreSize + new Random().nextInt(SwootyUtils.CHUNK_WIDTH / 4); x < SwootyUtils.CHUNK_WIDTH - oreSize - new Random().nextInt(SwootyUtils.CHUNK_WIDTH / 4); x += oreSize * new Random().nextInt(32)) {
+				for (int a = 0; a < oreSize; a++) {
+					dungeonMap[a] = SwootyUtils.DUNGEON_PATTERN[a];
+				}
+				for (int a = 0; a < dungeonMap.length; a++) {
+					for (int b = 0; b < dungeonMap.length; b++) {
+						int newX = x + a;
+						int newY = y + b;
+						if (newX > SwootyUtils.CHUNK_WIDTH) {
+							break;
+						}
+						if (newY > SwootyUtils.CHUNK_HEIGHT) {
+							newY = SwootyUtils.CHUNK_HEIGHT - 1;
+						}
+						try {
+							if (chunkData[newX][newY].getType() != SwootyUtils.BlockType.AIR) {
+								if (dungeonMap[a][b] == 1) {
+									chunkData[newX][newY] = new Block(SwootyUtils.BlockType.MOSSY_COBBLESTONE, ID, new Point(newX, newY));
+								}else if (dungeonMap[a][b] == 2) { //Change to Chest
+									chunkData[newX][newY] = new Block(SwootyUtils.BlockType.SANDSTONE, ID, new Point(newX, newY));
+								}else if (dungeonMap[a][b] == 3) {
+									//Add Mob Spawner code here
+								}else if (dungeonMap[a][b] == 0) {
+									chunkData[newX][newY] = new Block(SwootyUtils.BlockType.AIR, ID, new Point(newX, newY));
+								}
+							}
+						}catch (Exception e) {
 
+						}
+					}
+				}
+			}
+			break;
+		}
 	}
 
 	public void parseWater() {
 		//Water
 		try {
 			int startX = new Random().nextInt(SwootyUtils.CHUNK_WIDTH / 2);
-			int endX = -1;
-			int startHeight = -1;
-			for (int x = 0; x < SwootyUtils.CHUNK_WIDTH; x++) {
-				for (int y = 0; y < SwootyUtils.CHUNK_HEIGHT; y++) {
-					if (startHeight > 0 && y == startHeight) {
-						if (chunkData[x][y].getType() == SwootyUtils.BlockType.GRASS) {
-							endX = x;
-							break;
-						}
+			int startY = 0;
+			int endX = 0;
+			int depth = 0;
+			for (int y = 0; y < SwootyUtils.CHUNK_HEIGHT; y++) {
+				if (chunkData[startX][y].getType() == SwootyUtils.BlockType.GRASS) {
+					startY = y;
+				}
+			}
+			
+			if (startX > 0 && startY > 0) {
+				int distance = 0;
+				for (int x = startX; x < SwootyUtils.CHUNK_WIDTH; x++) {
+					if (distance > 4 && chunkData[x][startY].getType() == SwootyUtils.BlockType.GRASS) {
+						endX = x;
+						break;
 					}
-					if (chunkData[x][y].getType() == SwootyUtils.BlockType.GRASS && startHeight < 0) {
-						startHeight = y;
+					distance++;
+					
+					for (int y = startY; y < SwootyUtils.CHUNK_HEIGHT; y++) {
+						if (chunkData[x][y].getType() == SwootyUtils.BlockType.GRASS && y > depth) {
+							depth = y + 1;
+						}
 					}
 				}
 			}
-			int water = 0;
-			if (startX > 0 && startX < SwootyUtils.CHUNK_WIDTH && endX > 0 && endX < SwootyUtils.CHUNK_WIDTH - 4 && endX > startX) {
-				for (int x = startX; startX < endX; x++) {
-					for (int y = startHeight; y < SwootyUtils.CHUNK_HEIGHT; y++) {
-						if (chunkData[x][y].getType() == SwootyUtils.BlockType.AIR) {
-							water++;
-						}
-					}
-				}
-			}
-			if (startX > 0 && startX < SwootyUtils.CHUNK_WIDTH && endX > 0 && endX < SwootyUtils.CHUNK_WIDTH - 4 && endX > startX && water > (endX - startX)) {
-				for (int x = startX; startX < endX; x++) {
-					for (int y = startHeight; y < SwootyUtils.CHUNK_HEIGHT; y++) {
+			
+			if (endX > startX) {
+				for (int x = startX; x <= endX; x++) {
+					for (int y = startY; y <= depth; y++) {
 						if (chunkData[x][y].getType() == SwootyUtils.BlockType.AIR) {
 							chunkData[x][y] = new Block(SwootyUtils.BlockType.WATER, ID, new Point(x, y));
 						}else if (chunkData[x][y].getType() == SwootyUtils.BlockType.GRASS) {
 							chunkData[x][y] = new Block(SwootyUtils.BlockType.SAND, ID, new Point(x, y));
 						}
 					}
+					for (int y = startY; y > 0; y--) {
+						chunkData[x][y] = new Block(SwootyUtils.BlockType.AIR, ID, new Point(x, y));
+					}
 				}
 			}
 		}catch (Exception e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 		}
 	}
 
 	public void parseLava() {
-		
+		int oreSize = new Random().nextInt(SwootyUtils.ORE_CLUSTER_SIZE_MAX) + SwootyUtils.ORE_CLUSTER_SIZE_MIN;
+		int[][] oreMap = new int[oreSize][oreSize];
+		for (int y = (int)(terrainHeight + 32 + new Random().nextInt(32)); y < SwootyUtils.CHUNK_HEIGHT - oreSize; y += oreSize * new Random().nextInt(6)) {
+			for (int x = oreSize + new Random().nextInt(SwootyUtils.CHUNK_WIDTH / 4); x < SwootyUtils.CHUNK_WIDTH - oreSize - new Random().nextInt(SwootyUtils.CHUNK_WIDTH / 4); x += oreSize * new Random().nextInt(6)) {
+				for (int a = 0; a < oreSize; a++) {
+					oreMap[a] = SwootyUtils.ORE_CLUSTER_PATTERNS[new Random().nextInt(SwootyUtils.ORE_CLUSTER_PATTERNS.length)];
+				}
+				for (int a = 0; a < oreSize; a++) {
+					for (int b = 0; b < oreSize; b++) {
+						int newX = x + a;
+						int newY = y + b;
+						if (newX > SwootyUtils.CHUNK_WIDTH) {
+							break;
+						}
+						if (newY > SwootyUtils.CHUNK_HEIGHT) {
+							newY = SwootyUtils.CHUNK_HEIGHT - 1;
+						}
+						try {
+							if (chunkData[newX][newY].getType() == SwootyUtils.BlockType.STONE) {
+								if (oreMap[a][b] == 1) {
+									chunkData[newX][newY] = new Block(SwootyUtils.BlockType.LAVA, ID, new Point(newX, newY));
+								}
+							}
+						}catch (Exception e) {
+
+						}
+					}
+				}
+			}
+		}
 	}
 
 	public void removeBlock(Point p) {
@@ -242,13 +323,13 @@ public class Chunk implements Serializable{
 		queuedDrops = new ArrayList<WorldDrop>();
 		return data;
 	}
-	
+
 	public String dumpRegion() {
 		String begin = "-- BEGIN: SwootyUtils Chunk Region " + ID;
 		String end = "-- END: SwootyUtils Chunk Region " + ID;
 		String dump = "";
 		String newline = System.getProperty("line.separator");
-		
+
 		dump = begin + newline;
 		for (int x = 0; x < SwootyUtils.CHUNK_WIDTH; x++) {
 			for (int y = 0; y < SwootyUtils.CHUNK_HEIGHT; y++) {
@@ -258,7 +339,7 @@ public class Chunk implements Serializable{
 		dump += newline + end + newline;
 		return dump;
 	}
-	
+
 	public WorldDrop[][] getDropData() {
 		return dropData;
 	}
@@ -271,7 +352,7 @@ public class Chunk implements Serializable{
 		chunkData[b.getLocation().x][b.getLocation().y] = b;
 		//queuedChanges.add(b);
 	}
-	
+
 	public void updateDrop(WorldDrop b) {
 		dropData[b.getLocation().x][b.getLocation().y] = b;
 		//queuedDrops.add(b);

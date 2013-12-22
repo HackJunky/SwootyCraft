@@ -106,7 +106,7 @@ public class World implements Serializable{
 					x++;
 				}
 			}
-			Chunk c = new Chunk(chunk, true);
+			Chunk c = new Chunk(chunk, true, -1);
 			c.setData(chunkData);
 			world[chunk] = c;
 			chunk++;
@@ -234,7 +234,11 @@ public class World implements Serializable{
 	public void generateWorld() {
 		SwootyUtils.log("World", "Generating World terrain...");
 		for (int i = 0; i < SwootyUtils.CHUNK_QTY; i++) {
-			worldData[i] = new Chunk(i, false);
+			if (i == 0) {
+				worldData[i] = new Chunk(i, false, -1);
+			}else {
+				worldData[i] = new Chunk(i, false, worldData[i - 1].getSeamlessHeight());
+			}
 		}
 		worldAlpha = 0;
 		dayCycle = 0;
@@ -244,10 +248,20 @@ public class World implements Serializable{
 	public void removeBlock(Point p) {
 		Point block = p;
 		int chunk = 0;
-		chunk = block.x / SwootyUtils.CHUNK_WIDTH;
-		int x = block.x - (chunk * SwootyUtils.CHUNK_WIDTH);
-		int y = block.y;
-		block = new Point(x, y);
+		if (block.x < 0) {
+			chunk = SwootyUtils.CHUNK_QTY - (block.x / SwootyUtils.CHUNK_WIDTH) - 1;
+			int x = block.x + SwootyUtils.CHUNK_WIDTH; 
+			int y = block.y;
+			block = new Point(x, y);
+		}else if (block.x >= SwootyUtils.CHUNK_QTY * SwootyUtils.CHUNK_WIDTH) {
+			chunk = 0;
+			block = new Point(block.x - SwootyUtils.CHUNK_QTY * SwootyUtils.CHUNK_WIDTH, block.y);
+		}else{
+			chunk = block.x / SwootyUtils.CHUNK_WIDTH;
+			int x = block.x - (chunk * SwootyUtils.CHUNK_WIDTH);
+			int y = block.y;
+			block = new Point(x, y);
+		}
 		if (block.y > 0 && block.y <= SwootyUtils.CHUNK_HEIGHT) {
 			if (worldData[0] != null) {
 				if (worldData[chunk].getBlocks()[block.x][block.y].getType() != SwootyUtils.BlockType.AIR) {
@@ -262,10 +276,20 @@ public class World implements Serializable{
 		try {
 			Point block = p;
 			int chunk = 0;
-			chunk = block.x / SwootyUtils.CHUNK_WIDTH;
-			int x = block.x - (chunk * SwootyUtils.CHUNK_WIDTH);
-			int y = block.y;
-			block = new Point(x, y);
+			if (block.x < 0) {
+				chunk = SwootyUtils.CHUNK_QTY - (block.x / SwootyUtils.CHUNK_WIDTH) - 1;
+				int x = block.x + SwootyUtils.CHUNK_WIDTH; 
+				int y = block.y;
+				block = new Point(x, y);
+			}else if (block.x >= SwootyUtils.CHUNK_QTY * SwootyUtils.CHUNK_WIDTH) {
+				chunk = 0;
+				block = new Point(block.x - SwootyUtils.CHUNK_QTY * SwootyUtils.CHUNK_WIDTH, block.y);
+			}else{
+				chunk = block.x / SwootyUtils.CHUNK_WIDTH;
+				int x = block.x - (chunk * SwootyUtils.CHUNK_WIDTH);
+				int y = block.y;
+				block = new Point(x, y);
+			}
 			if (block.y > 0 && block.y <= SwootyUtils.CHUNK_HEIGHT) {
 				if (worldData[0] != null) {
 					if (worldData[chunk].getBlocks()[block.x][block.y].getType() == SwootyUtils.BlockType.AIR) {
@@ -293,7 +317,8 @@ public class World implements Serializable{
 			int y = block.y;
 			block = new Point(x, y);
 		}else if (block.x >= SwootyUtils.CHUNK_QTY * SwootyUtils.CHUNK_WIDTH) {
-
+			chunk = 0;
+			block = new Point(block.x - SwootyUtils.CHUNK_QTY * SwootyUtils.CHUNK_WIDTH, block.y);
 		}else{
 			chunk = block.x / SwootyUtils.CHUNK_WIDTH;
 			int x = block.x - (chunk * SwootyUtils.CHUNK_WIDTH);
@@ -321,7 +346,8 @@ public class World implements Serializable{
 			int y = block.y;
 			block = new Point(x, y);
 		}else if (block.x >= SwootyUtils.CHUNK_QTY * SwootyUtils.CHUNK_WIDTH) {
-
+			chunk = 0;
+			block = new Point(block.x - SwootyUtils.CHUNK_QTY * SwootyUtils.CHUNK_WIDTH, block.y);
 		}else{
 			chunk = block.x / SwootyUtils.CHUNK_WIDTH;
 			int x = block.x - (chunk * SwootyUtils.CHUNK_WIDTH);
@@ -395,9 +421,9 @@ public class World implements Serializable{
 
 	public void moveViewLeft() {
 		//coordViewport = new Rectangle(coordViewport.x - (SwootyUtils.TILE_SIZE_X / 8), coordViewport.y, coordViewport.width - (SwootyUtils.TILE_SIZE_X / 8), coordViewport.height);
-		if (blockViewport.x - 1 > 0) {
+		//if (blockViewport.x - 1 > 0) {
 			setBlockCentered(new Point (currentBlock.x - 1, currentBlock.y));
-		}
+		//}
 	}
 
 	public void moveViewRight() {

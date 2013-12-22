@@ -38,7 +38,8 @@ public class GraphicalEnvironment extends JFrame{
 	private static final long serialVersionUID = -4592966004232209324L;
 	private boolean isDebugMode = false;
 	private boolean isDebugVisible = false;
-	private boolean isStatsVisible = false;
+	private boolean isStatsVisible = true;
+	private boolean isMenuVisible = false;
 	private Rectangle renderArea;
 	private Rectangle hotbarArea;
 	private Rectangle armorArea;
@@ -47,6 +48,8 @@ public class GraphicalEnvironment extends JFrame{
 	private Rectangle xpArea;
 	private Rectangle debugArea;
 	private Rectangle statsArea;
+	private Rectangle resumeButtonArea;
+	private Rectangle quitButtonArea;
 	private ArrayList<String> statsList;
 	private ArrayList<String> debugData;
 	private String consoleInput = "";
@@ -176,6 +179,8 @@ public class GraphicalEnvironment extends JFrame{
 		healthArea = new Rectangle (hotbarArea.x + hotbarArea.width - 150, hotbarArea.y - 35, hotbarArea.x + hotbarArea.width, 20);
 		hungerArea = new Rectangle (armorArea.x, armorArea.y - 20, armorArea.width, 20);
 		xpArea = new Rectangle (hotbarArea.x, hotbarArea.y - 15, hotbarArea.width, 10);
+		resumeButtonArea = new Rectangle(SwootyUtils.ENV_SIZE_X / 2 - ((SwootyUtils.ENV_SIZE_X / 6) / 2), (SwootyUtils.ENV_SIZE_Y / 2) - 40, SwootyUtils.ENV_SIZE_X / 6, 32);
+		quitButtonArea = new Rectangle(SwootyUtils.ENV_SIZE_X / 2 - ((SwootyUtils.ENV_SIZE_X / 6) / 2), (SwootyUtils.ENV_SIZE_Y / 2) + 8, SwootyUtils.ENV_SIZE_X / 6, 32);
 		while (debugArea.y + debugArea.height > SwootyUtils.ENV_SIZE_Y) {
 			debugArea.height--;
 		}
@@ -508,6 +513,35 @@ public class GraphicalEnvironment extends JFrame{
 					i++;
 				}
 			}
+			
+			//Menu Drawing
+			if (isMenuVisible) {
+				Color t = g2d.getColor();
+				Color g = new Color(0.0f, 0.0f, 0.0f, 0.5f);  
+				g2d.setColor(g);
+				g2d.fillRect(renderArea.x, renderArea.y, renderArea.width, renderArea.height);
+				g2d.setColor(Color.WHITE);
+				
+				String resumeText = "Resume Game";
+				String quitText = "Quit Game";
+				int resumeWidth = fm.stringWidth(resumeText);
+				int quitWidth = fm.stringWidth(quitText);
+				
+				if (resumeButtonArea.contains(cursorPos)) {
+					g2d.drawImage(SwootyUtils.UIItem.UIBUTTON_OVER.getImage(), resumeButtonArea.x, resumeButtonArea.y, resumeButtonArea.width, resumeButtonArea.height, this);
+				}else {
+					g2d.drawImage(SwootyUtils.UIItem.UIBUTTON.getImage(), resumeButtonArea.x, resumeButtonArea.y, resumeButtonArea.width, resumeButtonArea.height, this);
+				}
+				if (quitButtonArea.contains(cursorPos)) {
+					g2d.drawImage(SwootyUtils.UIItem.UIBUTTON_OVER.getImage(), quitButtonArea.x, quitButtonArea.y, quitButtonArea.width, quitButtonArea.height, this);
+				}else {
+					g2d.drawImage(SwootyUtils.UIItem.UIBUTTON.getImage(), quitButtonArea.x, quitButtonArea.y, quitButtonArea.width, quitButtonArea.height, this);
+				}
+				g2d.drawString(resumeText, resumeButtonArea.x + (resumeButtonArea.width / 2) - (resumeWidth / 2), resumeButtonArea.y + (resumeButtonArea.height / 2) + (fm.getHeight() / 2));
+				g2d.drawString(quitText, quitButtonArea.x + (quitButtonArea.width / 2) - (quitWidth / 2), quitButtonArea.y + (quitButtonArea.height / 2) + (fm.getHeight() / 2));
+				g2d.setColor(t);
+			}
+
 		}else {
 			g2d.setColor(Color.GRAY);
 			g2d.fillRect(renderArea.x, renderArea.y, renderArea.width, renderArea.height);
@@ -787,6 +821,10 @@ public class GraphicalEnvironment extends JFrame{
 				}catch (Exception e) {
 
 				}
+				if (arg0.getKeyCode() == KeyEvent.VK_ESCAPE) {
+					isMenuVisible = !isMenuVisible;
+					SwootyUtils.log("GraphicalEnvironment", "Menu state toggled.");
+				}
 			}else {
 				if (arg0.getKeyCode() == KeyEvent.VK_ENTER && isDebugMode) {
 					if (processConCMD(consoleInput)) { 
@@ -862,7 +900,7 @@ public class GraphicalEnvironment extends JFrame{
 				SwootyUtils.log("CONCMD", "SwootyCraft Console Help Screen");
 				SwootyUtils.log("CONCMD", "      give [name] [blockid] [blockqty]");
 				//SwootyUtils.log("CONCMD", "		->");
-				SwootyUtils.log("CONCMD", "		 time [set/get] [time in ms]");
+				SwootyUtils.log("CONCMD", "      time [set/get] [time in ms]");
 				SwootyUtils.log("CONCMD", "      clear");
 				SwootyUtils.log("CONCMD", "      quit");
 				return false;
@@ -913,7 +951,7 @@ public class GraphicalEnvironment extends JFrame{
 
 		@Override
 		public void keyTyped(KeyEvent arg0) {
-
+			
 		}
 
 		@Override
@@ -936,16 +974,25 @@ public class GraphicalEnvironment extends JFrame{
 
 		@Override
 		public void mousePressed(MouseEvent arg0) {
-			if (arg0.getButton() == 1 && selectedBlock != null) {
-				worldData.removeBlock(selectedBlock);
-			}
-			if (arg0.getButton() == 3 && selectedBlock != null) {
-				if (worldData.getBlock(selectedBlock).getType() == SwootyUtils.BlockType.AIR) {
-					SwootyUtils.BlockType b;
-					if (worldData.getMyPlayer().getSelectedBlock() != null) {
-						b = worldData.getMyPlayer().getSelectedBlock();
-						worldData.placeBlock(selectedBlock, b);
+			if (!isMenuVisible) {
+				if (arg0.getButton() == 1 && selectedBlock != null) {
+					worldData.removeBlock(selectedBlock);
+				}
+				if (arg0.getButton() == 3 && selectedBlock != null) {
+					if (worldData.getBlock(selectedBlock).getType() == SwootyUtils.BlockType.AIR) {
+						SwootyUtils.BlockType b;
+						if (worldData.getMyPlayer().getSelectedBlock() != null) {
+							b = worldData.getMyPlayer().getSelectedBlock();
+							worldData.placeBlock(selectedBlock, b);
+						}
 					}
+				}
+			}else {
+				if (resumeButtonArea.contains(cursorPos)) {
+					isMenuVisible = false;
+				}
+				if (quitButtonArea.contains(cursorPos)) {
+					System.exit(0);
 				}
 			}
 		}

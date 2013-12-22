@@ -34,7 +34,14 @@ public class SwootyUtils {
 	static int KEY_PRESS_THRESH = 15;
 	
 	static int[][] ORE_CLUSTER_PATTERNS = {{0, 1, 1, 0} , {1, 0, 0, 1}, {1, 0, 1, 1}, {0, 0, 0, 1}, {1, 1, 1, 0}};
-	static int[][] DUNGEON_PATTERN = {{1, 1, 1, 1, 1, 1, 1, 1}, {1, 0, 0, 0, 0, 0, 1}, {1, 0, 0, 0, 0, 0, 1}, {1, 0, 0, 0, 0, 0, 1}, {1, 0, 0, 0, 0, 0, 1}, {1, 2, 0, 3, 0, 2, 1}, {1, 1, 1, 1, 1, 1, 1, 1}};
+	static int[][] DUNGEON_PATTERN = {
+		{1, 1, 1, 1, 1, 1, 1}, 
+		{1, 0, 0, 0, 0, 2, 1}, 
+		{1, 0, 0, 0, 0, 0, 1}, 
+		{1, 0, 0, 0, 0, 3, 1}, 
+		{1, 0, 0, 0, 0, 0, 1}, 
+		{1, 0, 0, 0, 0, 2, 1}, 
+		{1, 1, 1, 1, 1, 1, 1}};
 	static int[][] TREE_PATTERN = {{0, 0, 0, 1, 0, 0, 0}, {0, 0, 0, 1, 0, 0, 0}, {0, 0, 0, 1, 0, 0, 0}, {0, 0, 0, 1, 0, 0, 0}, {0, 0, 2, 1, 2, 0, 0}, {0, 2, 2, 2, 2, 2, 0}, {0, 2, 2, 2, 2, 2, 0}, {0, 0, 2, 2, 2, 0, 0}, {0, 0, 0, 2, 0, 0, 0}};
 	
 	
@@ -117,7 +124,7 @@ public class SwootyUtils {
 	static enum UIItem {
 		HOTBAR_UNSELECTED(loadImage("../UI/Tile Unselected.png")), HOTBAR_SELECTED(loadImage("../UI/Tile Selected.png")), ICON_ARMOR(loadImage("../UI/Armor.png")), ICON_ARMOR_HALF(loadImage("../UI/Armor Half.png")), ICON_ARMOR_EMPTY(loadImage("../UI/Armor Empty.png")), ICON_HEART(loadImage("../UI/Heart.png")),
 		ICON_HEART_HALF(loadImage("../UI/Heart Half.png")), ICON_HEART_EMPTY(loadImage("../UI/Heart Empty.png")), ICON_HUNGER(loadImage("../UI/Hunger.png")), ICON_HUNGER_HALF(loadImage("../UI/Hunger Half.png")), ICON_HUNGER_EMPTY(loadImage("../UI/Hunger Empty.png")), XP_BAR_EMPTY(loadImage("../UI/XPBar Empty.png")),
-		XP_BAR_FULL(loadImage("../UI/XPBar Full.png")); 
+		XP_BAR_FULL(loadImage("../UI/XPBar Full.png")), UIBUTTON(loadImage("../UI/UIButton.png")), UIBUTTON_OVER(loadImage("../UI/UIButton Over.png")); 
 		
 		private BufferedImage image;
 		
