@@ -248,7 +248,7 @@ public class Chunk implements Serializable{
 				}
 			}
 			
-			if (endX > startX) {
+			if (endX > startX && depth - startY > 2) {
 				for (int x = startX; x <= endX; x++) {
 					for (int y = startY; y <= depth; y++) {
 						if (chunkData[x][y].getType() == SwootyUtils.BlockType.AIR) {

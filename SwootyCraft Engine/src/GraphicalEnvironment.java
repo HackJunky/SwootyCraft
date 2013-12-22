@@ -131,7 +131,7 @@ public class GraphicalEnvironment extends JFrame{
 						}
 						writer.close();
 					}catch (Exception f) {
-						f.printStackTrace();
+						//f.printStackTrace();
 					}
 				}else {
 					try {
@@ -143,7 +143,7 @@ public class GraphicalEnvironment extends JFrame{
 						}
 						writer.close();
 					}catch (Exception f) {
-						f.printStackTrace();
+						//f.printStackTrace();
 					}
 				}
 				System.exit(0);

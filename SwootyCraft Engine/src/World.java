@@ -55,7 +55,7 @@ public class World implements Serializable{
 			}
 		}
 	}
-	
+
 	public Timer getWorldPhysics() {
 		return worldTick;
 	}
@@ -192,11 +192,27 @@ public class World implements Serializable{
 				if (worldData[getMyPlayer().getOccupiedChunk()].getBlocks()[getMyPlayer().getPlayerBlockLocation().x - (getMyPlayer().getOccupiedChunk() * SwootyUtils.CHUNK_WIDTH)][getMyPlayer().getPlayerBlockLocation().y + 1].getType() == SwootyUtils.BlockType.AIR) {
 					getMyPlayer().setPlayerLocation(new Point(getMyPlayer().getPlayerCoordLocation().x - (SwootyUtils.TILE_SIZE_X / 2), getMyPlayer().getPlayerCoordLocation().y));
 				}
+			}else if (worldData[getMyPlayer().getOccupiedChunk()].getBlocks()[getMyPlayer().getPlayerBlockLocation().x - (getMyPlayer().getOccupiedChunk() * SwootyUtils.CHUNK_WIDTH)][getMyPlayer().getPlayerBlockLocation().y].getType() == SwootyUtils.BlockType.WATER) { 
+				if (worldData[getMyPlayer().getOccupiedChunk()].getBlocks()[getMyPlayer().getPlayerBlockLocation().x - (getMyPlayer().getOccupiedChunk() * SwootyUtils.CHUNK_WIDTH)][getMyPlayer().getPlayerBlockLocation().y + 1].getType() == SwootyUtils.BlockType.WATER) {
+					getMyPlayer().setPlayerLocation(new Point(getMyPlayer().getPlayerCoordLocation().x - (SwootyUtils.TILE_SIZE_X / 6), getMyPlayer().getPlayerCoordLocation().y));
+				}
+			}else if (worldData[getMyPlayer().getOccupiedChunk()].getBlocks()[getMyPlayer().getPlayerBlockLocation().x - (getMyPlayer().getOccupiedChunk() * SwootyUtils.CHUNK_WIDTH)][getMyPlayer().getPlayerBlockLocation().y].getType() == SwootyUtils.BlockType.LAVA) { 
+				if (worldData[getMyPlayer().getOccupiedChunk()].getBlocks()[getMyPlayer().getPlayerBlockLocation().x - (getMyPlayer().getOccupiedChunk() * SwootyUtils.CHUNK_WIDTH)][getMyPlayer().getPlayerBlockLocation().y + 1].getType() == SwootyUtils.BlockType.LAVA) {
+					getMyPlayer().setPlayerLocation(new Point(getMyPlayer().getPlayerCoordLocation().x - (SwootyUtils.TILE_SIZE_X / 6), getMyPlayer().getPlayerCoordLocation().y));
+				}
 			}
 		}else {
 			if (worldData[getMyPlayer().getOccupiedChunk() - 1].getBlocks()[SwootyUtils.CHUNK_WIDTH - 1][getMyPlayer().getPlayerBlockLocation().y].getType() == SwootyUtils.BlockType.AIR) {
 				if (worldData[getMyPlayer().getOccupiedChunk() - 1].getBlocks()[SwootyUtils.CHUNK_WIDTH - 1][getMyPlayer().getPlayerBlockLocation().y + 1].getType() == SwootyUtils.BlockType.AIR) {
 					getMyPlayer().setPlayerLocation(new Point(getMyPlayer().getPlayerCoordLocation().x - (SwootyUtils.TILE_SIZE_X / 2), getMyPlayer().getPlayerCoordLocation().y));
+				}
+			}else if (worldData[getMyPlayer().getOccupiedChunk() - 1].getBlocks()[SwootyUtils.CHUNK_WIDTH - 1][getMyPlayer().getPlayerBlockLocation().y].getType() == SwootyUtils.BlockType.WATER) {
+				if (worldData[getMyPlayer().getOccupiedChunk() - 1].getBlocks()[SwootyUtils.CHUNK_WIDTH - 1][getMyPlayer().getPlayerBlockLocation().y + 1].getType() == SwootyUtils.BlockType.WATER) {
+					getMyPlayer().setPlayerLocation(new Point(getMyPlayer().getPlayerCoordLocation().x - (SwootyUtils.TILE_SIZE_X / 6), getMyPlayer().getPlayerCoordLocation().y));
+				}
+			}else if (worldData[getMyPlayer().getOccupiedChunk() - 1].getBlocks()[SwootyUtils.CHUNK_WIDTH - 1][getMyPlayer().getPlayerBlockLocation().y].getType() == SwootyUtils.BlockType.LAVA) {
+				if (worldData[getMyPlayer().getOccupiedChunk() - 1].getBlocks()[SwootyUtils.CHUNK_WIDTH - 1][getMyPlayer().getPlayerBlockLocation().y + 1].getType() == SwootyUtils.BlockType.LAVA) {
+					getMyPlayer().setPlayerLocation(new Point(getMyPlayer().getPlayerCoordLocation().x - (SwootyUtils.TILE_SIZE_X / 6), getMyPlayer().getPlayerCoordLocation().y));
 				}
 			}
 		}
@@ -208,11 +224,27 @@ public class World implements Serializable{
 				if (worldData[getMyPlayer().getOccupiedChunk()].getBlocks()[getMyPlayer().getPlayerBlockLocation().x - (getMyPlayer().getOccupiedChunk() * SwootyUtils.CHUNK_WIDTH) + 1][getMyPlayer().getPlayerBlockLocation().y + 1].getType() == SwootyUtils.BlockType.AIR) {
 					getMyPlayer().setPlayerLocation(new Point(getMyPlayer().getPlayerCoordLocation().x + (SwootyUtils.TILE_SIZE_X / 2), getMyPlayer().getPlayerCoordLocation().y));
 				}
+			}else if (worldData[getMyPlayer().getOccupiedChunk()].getBlocks()[getMyPlayer().getPlayerBlockLocation().x - (getMyPlayer().getOccupiedChunk() * SwootyUtils.CHUNK_WIDTH) + 1][getMyPlayer().getPlayerBlockLocation().y].getType() == SwootyUtils.BlockType.WATER) {
+				if (worldData[getMyPlayer().getOccupiedChunk()].getBlocks()[getMyPlayer().getPlayerBlockLocation().x - (getMyPlayer().getOccupiedChunk() * SwootyUtils.CHUNK_WIDTH) + 1][getMyPlayer().getPlayerBlockLocation().y + 1].getType() == SwootyUtils.BlockType.WATER) {
+					getMyPlayer().setPlayerLocation(new Point(getMyPlayer().getPlayerCoordLocation().x + (SwootyUtils.TILE_SIZE_X / 6), getMyPlayer().getPlayerCoordLocation().y));
+				}
+			}else if (worldData[getMyPlayer().getOccupiedChunk()].getBlocks()[getMyPlayer().getPlayerBlockLocation().x - (getMyPlayer().getOccupiedChunk() * SwootyUtils.CHUNK_WIDTH) + 1][getMyPlayer().getPlayerBlockLocation().y].getType() == SwootyUtils.BlockType.LAVA) {
+				if (worldData[getMyPlayer().getOccupiedChunk()].getBlocks()[getMyPlayer().getPlayerBlockLocation().x - (getMyPlayer().getOccupiedChunk() * SwootyUtils.CHUNK_WIDTH) + 1][getMyPlayer().getPlayerBlockLocation().y + 1].getType() == SwootyUtils.BlockType.LAVA) {
+					getMyPlayer().setPlayerLocation(new Point(getMyPlayer().getPlayerCoordLocation().x + (SwootyUtils.TILE_SIZE_X / 6), getMyPlayer().getPlayerCoordLocation().y));
+				}
 			}
 		}else {
 			if (worldData[getMyPlayer().getOccupiedChunk() + 1].getBlocks()[0][getMyPlayer().getPlayerBlockLocation().y].getType() == SwootyUtils.BlockType.AIR) {
 				if (worldData[getMyPlayer().getOccupiedChunk() + 1].getBlocks()[0][getMyPlayer().getPlayerBlockLocation().y + 1].getType() == SwootyUtils.BlockType.AIR) { 
 					getMyPlayer().setPlayerLocation(new Point(getMyPlayer().getPlayerCoordLocation().x + (SwootyUtils.TILE_SIZE_X / 2), getMyPlayer().getPlayerCoordLocation().y));
+				}
+			}else if (worldData[getMyPlayer().getOccupiedChunk() + 1].getBlocks()[0][getMyPlayer().getPlayerBlockLocation().y].getType() == SwootyUtils.BlockType.WATER) {
+				if (worldData[getMyPlayer().getOccupiedChunk() + 1].getBlocks()[0][getMyPlayer().getPlayerBlockLocation().y + 1].getType() == SwootyUtils.BlockType.WATER) { 
+					getMyPlayer().setPlayerLocation(new Point(getMyPlayer().getPlayerCoordLocation().x + (SwootyUtils.TILE_SIZE_X / 6), getMyPlayer().getPlayerCoordLocation().y));
+				}
+			}else if (worldData[getMyPlayer().getOccupiedChunk() + 1].getBlocks()[0][getMyPlayer().getPlayerBlockLocation().y].getType() == SwootyUtils.BlockType.LAVA) {
+				if (worldData[getMyPlayer().getOccupiedChunk() + 1].getBlocks()[0][getMyPlayer().getPlayerBlockLocation().y + 1].getType() == SwootyUtils.BlockType.LAVA) { 
+					getMyPlayer().setPlayerLocation(new Point(getMyPlayer().getPlayerCoordLocation().x + (SwootyUtils.TILE_SIZE_X / 6), getMyPlayer().getPlayerCoordLocation().y));
 				}
 			}
 		}
@@ -264,7 +296,7 @@ public class World implements Serializable{
 		}
 		if (block.y > 0 && block.y <= SwootyUtils.CHUNK_HEIGHT) {
 			if (worldData[0] != null) {
-				if (worldData[chunk].getBlocks()[block.x][block.y].getType() != SwootyUtils.BlockType.AIR) {
+				if (worldData[chunk].getBlocks()[block.x][block.y].getType() != SwootyUtils.BlockType.AIR && worldData[chunk].getBlocks()[block.x][block.y].getType() != SwootyUtils.BlockType.WATER && worldData[chunk].getBlocks()[block.x][block.y].getType() != SwootyUtils.BlockType.LAVA) {
 					SwootyUtils.log("World", "Removing " + worldData[chunk].getBlocks()[block.x][block.y].getType() + " at position (" + block.x + ", " + block.y + ") from chunk " + chunk + ".");
 					worldData[chunk].removeBlock(new Point(block.x, block.y));
 				}
@@ -422,7 +454,7 @@ public class World implements Serializable{
 	public void moveViewLeft() {
 		//coordViewport = new Rectangle(coordViewport.x - (SwootyUtils.TILE_SIZE_X / 8), coordViewport.y, coordViewport.width - (SwootyUtils.TILE_SIZE_X / 8), coordViewport.height);
 		//if (blockViewport.x - 1 > 0) {
-			setBlockCentered(new Point (currentBlock.x - 1, currentBlock.y));
+		setBlockCentered(new Point (currentBlock.x - 1, currentBlock.y));
 		//}
 	}
 
@@ -518,6 +550,10 @@ public class World implements Serializable{
 							p.setPlayerLocation(new Point(p.getPlayerCoordLocation().x, p.getPlayerCoordLocation().y + SwootyUtils.GRAVITY));
 							iterationsPT++;
 						}
+						if (c.getBlocks()[p.getPlayerBlockLocation().x - (p.getOccupiedChunk() * SwootyUtils.CHUNK_WIDTH)][p.getPlayerBlockLocation().y + 2].getType() == SwootyUtils.BlockType.WATER) {
+							p.setPlayerLocation(new Point(p.getPlayerCoordLocation().x, p.getPlayerCoordLocation().y + (SwootyUtils.GRAVITY / 6)));
+							iterationsPT++;
+						}
 					}
 					if (c != null) {
 						for (int x = SwootyUtils.CHUNK_WIDTH - 1; x >= 0; x--) {
@@ -607,12 +643,32 @@ public class World implements Serializable{
 				if (isJumpApex) {
 					if (worldData[getMyPlayer().getOccupiedChunk()].getBlocks()[getMyPlayer().getPlayerBlockLocation().x - (getMyPlayer().getOccupiedChunk() * SwootyUtils.CHUNK_WIDTH)][getMyPlayer().getPlayerBlockLocation().y + 2].getType() == SwootyUtils.BlockType.AIR) {
 						getMyPlayer().setPlayerLocation(new Point(getMyPlayer().getPlayerCoordLocation().x, getMyPlayer().getPlayerCoordLocation().y + SwootyUtils.GRAVITY));
+					}else if (worldData[getMyPlayer().getOccupiedChunk()].getBlocks()[getMyPlayer().getPlayerBlockLocation().x - (getMyPlayer().getOccupiedChunk() * SwootyUtils.CHUNK_WIDTH)][getMyPlayer().getPlayerBlockLocation().y + 2].getType() == SwootyUtils.BlockType.WATER) {
+						getMyPlayer().setPlayerLocation(new Point(getMyPlayer().getPlayerCoordLocation().x, getMyPlayer().getPlayerCoordLocation().y + (SwootyUtils.GRAVITY / 6)));
+					}else if (worldData[getMyPlayer().getOccupiedChunk()].getBlocks()[getMyPlayer().getPlayerBlockLocation().x - (getMyPlayer().getOccupiedChunk() * SwootyUtils.CHUNK_WIDTH)][getMyPlayer().getPlayerBlockLocation().y + 2].getType() == SwootyUtils.BlockType.LAVA) {
+						getMyPlayer().setPlayerLocation(new Point(getMyPlayer().getPlayerCoordLocation().x, getMyPlayer().getPlayerCoordLocation().y + (SwootyUtils.GRAVITY / 6)));
 					}else {
 						isJumping = false;
 					}
 				}else {
 					if (worldData[getMyPlayer().getOccupiedChunk()].getBlocks()[getMyPlayer().getPlayerBlockLocation().x - (getMyPlayer().getOccupiedChunk() * SwootyUtils.CHUNK_WIDTH)][getMyPlayer().getPlayerBlockLocation().y - 1].getType() == SwootyUtils.BlockType.AIR) {
 						int increase = getMyPlayer().getPlayerCoordLocation().y - (SwootyUtils.GRAVITY);
+						getMyPlayer().setPlayerLocation(new Point(getMyPlayer().getPlayerCoordLocation().x, increase));
+						pixelsToApex -= SwootyUtils.GRAVITY;
+						if (pixelsToApex <= 0) {
+							isJumpApex = true;
+						}
+					}
+					if (worldData[getMyPlayer().getOccupiedChunk()].getBlocks()[getMyPlayer().getPlayerBlockLocation().x - (getMyPlayer().getOccupiedChunk() * SwootyUtils.CHUNK_WIDTH)][getMyPlayer().getPlayerBlockLocation().y - 1].getType() == SwootyUtils.BlockType.WATER) {
+						int increase = getMyPlayer().getPlayerCoordLocation().y - (SwootyUtils.GRAVITY / 6);
+						getMyPlayer().setPlayerLocation(new Point(getMyPlayer().getPlayerCoordLocation().x, increase));
+						pixelsToApex -= SwootyUtils.GRAVITY;
+						if (pixelsToApex <= 0) {
+							isJumpApex = true;
+						}
+					}
+					if (worldData[getMyPlayer().getOccupiedChunk()].getBlocks()[getMyPlayer().getPlayerBlockLocation().x - (getMyPlayer().getOccupiedChunk() * SwootyUtils.CHUNK_WIDTH)][getMyPlayer().getPlayerBlockLocation().y - 1].getType() == SwootyUtils.BlockType.LAVA) {
+						int increase = getMyPlayer().getPlayerCoordLocation().y - (SwootyUtils.GRAVITY / 8);
 						getMyPlayer().setPlayerLocation(new Point(getMyPlayer().getPlayerCoordLocation().x, increase));
 						pixelsToApex -= SwootyUtils.GRAVITY;
 						if (pixelsToApex <= 0) {
