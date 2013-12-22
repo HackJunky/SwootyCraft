@@ -38,6 +38,7 @@ public class GraphicalEnvironment extends JFrame{
 	private static final long serialVersionUID = -4592966004232209324L;
 	private boolean isDebugMode = false;
 	private boolean isDebugVisible = false;
+	private boolean isStatsVisible = false;
 	private Rectangle renderArea;
 	private Rectangle hotbarArea;
 	private Rectangle armorArea;
@@ -129,6 +130,18 @@ public class GraphicalEnvironment extends JFrame{
 					}catch (Exception f) {
 						f.printStackTrace();
 					}
+				}else {
+					try {
+						File file = new File(GraphicalEnvironment.this.worldName);
+						file.getParentFile().mkdirs();
+						FileWriter writer = new FileWriter(file);
+						for (String s : worldData.dumpRegions()) {
+							writer.write(s);
+						}
+						writer.close();
+					}catch (Exception f) {
+						f.printStackTrace();
+					}
 				}
 				System.exit(0);
 			}
@@ -155,8 +168,9 @@ public class GraphicalEnvironment extends JFrame{
 
 	public void configureLayout() {
 		renderArea = new Rectangle (0, 0, SwootyUtils.ENV_SIZE_X, SwootyUtils.ENV_SIZE_Y);
-		statsArea = new Rectangle (0, 0, SwootyUtils.ENV_SIZE_X, 25);
-		debugArea = new Rectangle (0, SwootyUtils.ENV_SIZE_Y - (SwootyUtils.ENV_SIZE_Y / 6), renderArea.width, SwootyUtils.ENV_SIZE_Y / 6);
+		statsArea = new Rectangle (15, 0, SwootyUtils.ENV_SIZE_X / 6, SwootyUtils.ENV_SIZE_Y);
+		//debugArea = new Rectangle (0, SwootyUtils.ENV_SIZE_Y - (SwootyUtils.ENV_SIZE_Y / 6), renderArea.width, SwootyUtils.ENV_SIZE_Y / 6);
+		debugArea = new Rectangle (0, (SwootyUtils.ENV_SIZE_Y / 2), renderArea.width / 4, SwootyUtils.ENV_SIZE_Y / 3);
 		hotbarArea = new Rectangle ((int)(SwootyUtils.ENV_SIZE_X / 2 - (3.5 * 40)), SwootyUtils.ENV_SIZE_Y - 40, (9 * 40), 40);
 		armorArea = new Rectangle (hotbarArea.x, hotbarArea.y - 35, hotbarArea.width / 4, 20);
 		healthArea = new Rectangle (hotbarArea.x + hotbarArea.width - 150, hotbarArea.y - 35, hotbarArea.x + hotbarArea.width, 20);
@@ -170,11 +184,11 @@ public class GraphicalEnvironment extends JFrame{
 	public void populateStats() {
 		statsList = new ArrayList<String>();
 		if (isNetworked) {
-			statsList.add("Network");
+			statsList.add("Game Type: Network");
 			if (isServer) {
-				statsList.add("Server");
+				statsList.add("Network Mode: Server");
 			}else {
-				statsList.add("Client");
+				statsList.add("Network Mode: Client");
 			}
 			if (isServer) {
 				int numThreads = 0;
@@ -189,17 +203,18 @@ public class GraphicalEnvironment extends JFrame{
 					}
 				}
 				numThreads--;
-				statsList.add("Slots: " + numThreads + "/" + SwootyUtils.NUM_SLOTS);
+				statsList.add("Network Slots: " + numThreads + "/" + SwootyUtils.NUM_SLOTS);
 				numThreads += 1;
 				overhead = overhead / numThreads;
-				statsList.add("Overhead Mux: " + overhead);
+				statsList.add("Unique Overhead Objects: " + overhead);
 			}
-			statsList.add("Players: " + worldData.getPlayers().size());
+			statsList.add("Network-Synced Players: " + worldData.getPlayers().size());
+			statsList.add("Network Events per Tick: " + worldData.getQueueSize());
 		}else {
-			statsList.add("Local");
+			statsList.add("Game Type: Local");
 		}
 		try {
-			statsList.add("Physics Iterations/Tick: " + worldData.getIterations());
+			statsList.add("Physics Iterations per Tick: " + worldData.getIterations());
 		}catch (Exception e) {
 			statsList.add("Physics Iterations/Tick: ???");
 		}
@@ -208,20 +223,19 @@ public class GraphicalEnvironment extends JFrame{
 		}catch (Exception e) {
 			statsList.add("World Time: ?");
 		}
-		statsList.add("Block Updates/Tick: " + worldData.getQueueSize());
 		try {
-			statsList.add("Viewport: (" + worldData.getBlockViewport().x + ", " + worldData.getBlockViewport().y + ", " + worldData.getBlockViewport().width + ", " + worldData.getBlockViewport().height + ")");
+			statsList.add("Block Viewport: (" + worldData.getBlockViewport().x + ", " + worldData.getBlockViewport().y + ", " + worldData.getBlockViewport().width + ", " + worldData.getBlockViewport().height + ")");
 			//statsList.add("Viewport: (" + (worldData.getCoordViewport().x / SwootyUtils.TILE_SIZE_X) + ", " + (worldData.getCoordViewport().y / SwootyUtils.TILE_SIZE_Y) + ", " + (worldData.getCoordViewport().width / SwootyUtils.TILE_SIZE_X) + ", " + (worldData.getCoordViewport().height / SwootyUtils.TILE_SIZE_Y) + ")");
 		}catch (Exception e) {
-			statsList.add("Viewport: (??, ??, ??, ??)");
+			statsList.add("Block Viewport: (??, ??, ??, ??)");
 		}
 
-		statsList.add("Render Load: " + opsPerTick);
+		statsList.add("Render Operations per Tick: " + opsPerTick);
 		opsPerTick = -1;
 		if (cursorPos != null && selectedBlock != null) {
-			statsList.add("Cursor: (" + cursorPos.x + ", " + cursorPos.y + "), (" + selectedBlock.x + " , " + selectedBlock.y + ")");
+			statsList.add("Cursor Position: Coordinate System (" + cursorPos.x + ", " + cursorPos.y + "), Block System (" + selectedBlock.x + " , " + selectedBlock.y + ")");
 		}else {
-			statsList.add("Cursor: No Cursor Data");
+			statsList.add("Cursor Position: No Data");
 		}
 	}
 
@@ -334,22 +348,22 @@ public class GraphicalEnvironment extends JFrame{
 			if (players != null) {
 				for (int i = 0; i < players.size(); i++) {
 					Player p = players.get(i);
-					if (p.isAlive() && p.getPlayerCoordLocation() != null && worldData.getBlockViewport().contains(p.getPlayerBlockLocation())) {
+					if (p != null && p.isAlive() && p.getPlayerCoordLocation() != null && worldData.getBlockViewport().contains(p.getPlayerBlockLocation())) {
 						int playerX = p.getPlayerCoordLocation().x - (worldData.getBlockViewport().x * SwootyUtils.TILE_SIZE_X);
 						int playerY = p.getPlayerCoordLocation().y - (worldData.getBlockViewport().y * SwootyUtils.TILE_SIZE_Y);
 						if (p.getDirection() == -1) {
 							g2d.drawImage(SwootyUtils.EntityType.PLAYER_LEFT.getImage(), playerX, playerY, SwootyUtils.TILE_SIZE_X, SwootyUtils.TILE_SIZE_Y * 2, this);
-							if (worldData.getMyPlayer().getSelectedBlock() != null) {
+							if (worldData.getMyPlayer().getSelectedBlock() != null && p.getSelectedBlock().getImage() != null) {
 								g2d.drawImage(p.getSelectedBlock().getImage(), playerX + (SwootyUtils.TILE_SIZE_X - (SwootyUtils.TILE_SIZE_X / 2)), playerY + (SwootyUtils.TILE_SIZE_Y - (SwootyUtils.TILE_SIZE_Y / 4)), SwootyUtils.TILE_SIZE_X / 2, SwootyUtils.TILE_SIZE_Y / 2, this);
 							}
 						}else if (p.getDirection() == 0) {
 							g2d.drawImage(SwootyUtils.EntityType.PLAYER_FRONT.getImage(), playerX, playerY, SwootyUtils.TILE_SIZE_X, SwootyUtils.TILE_SIZE_Y * 2, this);
-							if (worldData.getMyPlayer().getSelectedBlock() != null) {
+							if (worldData.getMyPlayer().getSelectedBlock() != null && p.getSelectedBlock().getImage() != null) {
 								g2d.drawImage(p.getSelectedBlock().getImage(), playerX + (SwootyUtils.TILE_SIZE_X - (SwootyUtils.TILE_SIZE_X / 4)), playerY + (SwootyUtils.TILE_SIZE_Y - (SwootyUtils.TILE_SIZE_Y / 4)), SwootyUtils.TILE_SIZE_X / 2, SwootyUtils.TILE_SIZE_Y / 2, this);
 							}
 						}else if (p.getDirection() == 1) {
 							g2d.drawImage(SwootyUtils.EntityType.PLAYER_RIGHT.getImage(), playerX, playerY, SwootyUtils.TILE_SIZE_X, SwootyUtils.TILE_SIZE_Y * 2, this);
-							if (worldData.getMyPlayer().getSelectedBlock() != null) {
+							if (worldData.getMyPlayer().getSelectedBlock() != null && p.getSelectedBlock().getImage() != null) {
 								g2d.drawImage(p.getSelectedBlock().getImage(), playerX + (SwootyUtils.TILE_SIZE_X / 2), playerY + (SwootyUtils.TILE_SIZE_Y - (SwootyUtils.TILE_SIZE_Y / 4)), SwootyUtils.TILE_SIZE_X / 2, SwootyUtils.TILE_SIZE_Y / 2, this);
 							}
 						}
@@ -358,9 +372,9 @@ public class GraphicalEnvironment extends JFrame{
 						int drawY = (int)(playerY - (SwootyUtils.TILE_SIZE_Y + (SwootyUtils.TILE_SIZE_Y / 4)) + fm.getHeight()) + 2;
 						int drawWidth = fm.stringWidth(p.getName()) + 5;
 						int drawHeight = fm.getHeight() + 5;
-						
+
 						Color c = g2d.getColor();
-						
+
 						Color b = new Color(0.0f, 0.0f, 0.0f, 0.75f);
 						g2d.setColor(b);
 						g2d.fillRect(drawX - 2, drawY - 2, drawWidth, drawHeight);
@@ -374,7 +388,7 @@ public class GraphicalEnvironment extends JFrame{
 
 			//Alpha
 			Color c1 = g2d.getColor();
-			Color a1 = new Color(0.0f, 0.0f, 0.0f, worldData.getWorldTime());  
+			Color a1 = new Color(0.0f, 0.0f, 0.0f, worldData.getWorldAlpha());  
 			g2d.setColor(a1);
 			g2d.fillRect(renderArea.x, renderArea.y, renderArea.width, renderArea.height);
 			g2d.setColor(c1);
@@ -510,15 +524,15 @@ public class GraphicalEnvironment extends JFrame{
 		if (isDebugMode && isDebugVisible) {
 			//Draw Background
 			g2d.setColor(Color.BLACK);
-			g2d.fillRect(debugArea.x, debugArea.y, debugArea.width, debugArea.height);
+			//g2d.fillRect(debugArea.x, debugArea.y, debugArea.width, debugArea.height);
 			g2d.setColor(Color.DARK_GRAY);
 			g2d.setStroke(thickStroke);
-			g2d.drawRect(debugArea.x, debugArea.y, debugArea.width, debugArea.height);
+			//g2d.drawRect(debugArea.x, debugArea.y, debugArea.width, debugArea.height);
 			g2d.setStroke(baseStroke);
 
 			//Draw Text
 			int numLines = (debugArea.height / fm.getHeight()) - 1;
-			g2d.setColor(Color.GREEN);
+			g2d.setColor(Color.WHITE);
 			if (debugData.size() > numLines) {
 				int offsetY = fm.getHeight() * 2;
 				for (int i = debugData.size() - 1; i > debugData.size() - numLines; i--) {
@@ -537,21 +551,27 @@ public class GraphicalEnvironment extends JFrame{
 			g2d.drawString("\\>" + consoleInput + "_", debugArea.x + 5, debugArea.y + debugArea.height - fm.getHeight() + 5);
 		}
 
-		//Stats Area
-		g2d.setColor(Color.BLACK);
-		g2d.fillRect(statsArea.x, statsArea.y, statsArea.width, statsArea.height);
-		g2d.setColor(Color.DARK_GRAY);
-		g2d.setStroke(thickStroke);
-		g2d.drawRect(statsArea.x, statsArea.y, statsArea.width, statsArea.height);
-		g2d.setStroke(baseStroke);
-		g2d.setColor(Color.GREEN);
-		int offset = 20;
-		for (String s : statsList) {
-			g2d.drawString(s, offset, statsArea.height - (fm.getHeight() / 2));
-			opsPerTick++;
-			offset += fm.stringWidth(s) + 20;
+		if (isStatsVisible) {
+			//Stats Area
+			g2d.setColor(Color.BLACK);
+			//g2d.fillRect(statsArea.x, statsArea.y, statsArea.width, statsArea.height);
+			g2d.setColor(Color.DARK_GRAY);
+			g2d.setStroke(thickStroke);
+			//g2d.drawRect(statsArea.x, statsArea.y, statsArea.width, statsArea.height);
+			g2d.setStroke(baseStroke);
+			g2d.setColor(Color.WHITE);
+			int offset = 15 + statsArea.y;
+			g2d.setColor(Color.BLUE);
+			g2d.drawString("Real-time Game Debugger", statsArea.x - 10, offset);
+			g2d.setColor(Color.WHITE);
+			offset = 15 + fm.getHeight() + statsArea.y;
+			boolean draw = false;
+			for (String s : statsList) {
+				g2d.drawString(s, statsArea.x, offset);
+				opsPerTick++;
+				offset += fm.getHeight() + 5;
+			}
 		}
-
 		Toolkit.getDefaultToolkit().sync();
 		bs.show();
 	}
@@ -726,6 +746,9 @@ public class GraphicalEnvironment extends JFrame{
 				if (arg0.getKeyCode() == KeyEvent.VK_W) {
 					keyW = true;
 				}
+				if (arg0.getKeyCode() == KeyEvent.VK_F3) {
+					isStatsVisible = !isStatsVisible;
+				}
 				if (arg0.getKeyCode() == KeyEvent.VK_T && isDebugMode) {
 					isDebugVisible = true;
 				}
@@ -852,15 +875,15 @@ public class GraphicalEnvironment extends JFrame{
 						String a = "0." + params[2];
 						float d = Float.valueOf(a);
 						if (d > 0.90f) {
-							worldData.setWorldTime(0.90f, true);
+							worldData.setWorldAlpha(0.90f, true);
 						}else if (d < 0) {
-							worldData.setWorldTime(0.0f, true);
+							worldData.setWorldAlpha(0.0f, true);
 						}else {
-							worldData.setWorldTime(d, true);							
+							worldData.setWorldAlpha(d, true);							
 						}
 						return true;
 					}else if (params[1].equals("get")) {
-						SwootyUtils.log("CONCMD", "World time is " + worldData.getWorldTime());
+						SwootyUtils.log("CONCMD", "World time is " + worldData.getWorldAlpha());
 						return false;
 					}else {
 						SwootyUtils.log("CONCMD", "Usage: time [get/set] [time in ms]");
@@ -965,7 +988,7 @@ public class GraphicalEnvironment extends JFrame{
 		private Point remoteLocation;
 		private ArrayList<Player> players;
 		private ArrayList<Point> playerLocations;
-		private float worldTime;
+		private int worldCycle;
 
 		private int downloadProgress = 1;
 		private boolean terminated = false;
@@ -1034,7 +1057,7 @@ public class GraphicalEnvironment extends JFrame{
 							out.writeObject(dropsOut);
 							out.writeObject(players);
 							out.writeObject(playerLocations);
-							out.writeObject(worldData.getWorldTime());
+							out.writeObject(worldData.getWorldCycle());
 						}
 					}catch (Exception ex) {
 						if (!terminated) {
@@ -1095,6 +1118,7 @@ public class GraphicalEnvironment extends JFrame{
 								}
 								SwootyUtils.log("Network Module", "Download complete!");
 								worldData.spawn();
+								worldData.getWorldPhysics().start();
 							}
 							//Write changes first
 							encode();
@@ -1108,7 +1132,7 @@ public class GraphicalEnvironment extends JFrame{
 							dropsIn = (ArrayList<WorldDrop>)in.readObject();
 							players = (ArrayList<Player>)in.readObject();
 							playerLocations = (ArrayList<Point>)in.readObject();
-							worldTime = (float)in.readObject();
+							worldCycle = (int)in.readObject();
 							decode();
 						}
 					}catch (Exception ex) {
@@ -1151,7 +1175,7 @@ public class GraphicalEnvironment extends JFrame{
 				worldData.updateWorld(input);
 				worldData.updateWorldDrops(dropsIn);
 				if (!isServer) {
-					worldData.setWorldTime(worldTime, false);
+					worldData.setWorldCycle(worldCycle);
 				}
 				if (isServer && remotePlayer != null) {
 					remotePlayer.setPlayerLocation(remoteLocation);

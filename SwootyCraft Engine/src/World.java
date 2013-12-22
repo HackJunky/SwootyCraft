@@ -28,7 +28,7 @@ public class World implements Serializable{
 	private boolean isServer;
 	private int dayCycle;
 	private boolean isDay;
-	private float worldTime;
+	private float worldAlpha;
 	private int iterationsPT;
 	private String worldName;
 
@@ -41,9 +41,11 @@ public class World implements Serializable{
 		this.worldName = worldName; 
 		this.isNet = isNet;
 		this.isServer = isServer;
+		worldTick = new Timer(50, worldEvents = new WorldTick());
 		if (!isNet && !isLoaded || isServer) {
 			generateWorld();
 			SwootyUtils.log("World", "Building Gamespace terrain...");
+			worldTick.start();
 		}else {
 			if (isLoaded) {
 				SwootyUtils.log("World", "Loading save to Gamespace...");
@@ -52,8 +54,10 @@ public class World implements Serializable{
 				SwootyUtils.log("World", "Error: Game state is null!");
 			}
 		}
-		worldTick = new Timer(50, worldEvents = new WorldTick());
-		worldTick.start();
+	}
+	
+	public Timer getWorldPhysics() {
+		return worldTick;
 	}
 
 	public void loadFromName() {
@@ -232,7 +236,7 @@ public class World implements Serializable{
 		for (int i = 0; i < SwootyUtils.CHUNK_QTY; i++) {
 			worldData[i] = new Chunk(i, false);
 		}
-		worldTime = 0;
+		worldAlpha = 0;
 		dayCycle = 0;
 		isDay = true;
 	}
@@ -431,16 +435,16 @@ public class World implements Serializable{
 		return coordViewport;
 	}
 
-	public float getWorldTime() {
-		return worldTime;
+	public float getWorldAlpha() {
+		return worldAlpha;
 	}
 
-	public void setWorldTime(float f, boolean verbose) {
+	public void setWorldAlpha(float f, boolean verbose) {
 		if (verbose) {
 			SwootyUtils.log("World", "Setting world time to " + (f * 100));
-			worldTime = f;
+			worldAlpha = f;
 		}else {
-			worldTime = f;
+			worldAlpha = f;
 		}
 	}
 
@@ -450,6 +454,15 @@ public class World implements Serializable{
 
 	public int getWorldCycle() {
 		return dayCycle;
+	}
+
+	public void setWorldCycle (int i) {
+		dayCycle = i;
+		if (dayCycle > 0) {
+			isDay = true;
+		}else {
+			isDay = false;
+		}
 	}
 
 	public String[] dumpRegions() {
@@ -463,7 +476,6 @@ public class World implements Serializable{
 	}
 
 	public class WorldTick implements ActionListener {
-		private boolean lastPlayerState = false;
 		private boolean isJumping = false;
 		private boolean isJumpApex = false;
 		private int pixelsToApex = 0; 
@@ -499,7 +511,7 @@ public class World implements Serializable{
 									WorldDrop d = c.getDropData()[x][y];
 									if (c.getDropData()[d.getLocation().x][d.getLocation().y] != null) {
 										c.getDropData()[d.getLocation().x][d.getLocation().y].addTypes(d.getTypes());
-										SwootyUtils.log("World", "Catalogged a drop moving ontop of another drop.");
+										//SwootyUtils.log("World", "Catalogged a drop moving ontop of another drop.");
 										c.getDropData()[x][y] = null;
 										iterationsPT++;
 									}else {
@@ -530,28 +542,25 @@ public class World implements Serializable{
 				//e.printStackTrace();
 			}
 			try {
-				if (!isNet || isNet && isServer) {
-					float increment = SwootyUtils.WORLD_TIME_CAP / 10000;
-					if (!isDay) {
-						if (dayCycle > -SwootyUtils.WORLD_TIME_CAP) {
-							dayCycle--;
-							if (worldTime < 0.9f) {
-								worldTime += 0.005f;
-							}
-						}else {
-							isDay = !isDay;
-							SwootyUtils.log("World", "Day time returns...");
-						}
+				//Day and Night Model
+				//X Max = 500, X Min = 0
+				//worldAlpha 0 = Day; worldAlpha 0.9 = Night
+				//y = 1.0 - ABS(0.002X)
+				if (!isDay) {
+					if (dayCycle > 0) {
+						dayCycle--;
+						worldAlpha = (float)(1.0 - Math.abs((0.002 * dayCycle)));
 					}else {
-						if (dayCycle < SwootyUtils.WORLD_TIME_CAP) {
-							dayCycle++;
-							if (worldTime > 0) {
-								worldTime -= 0.005f;
-							}
-						}else {
-							isDay = !isDay;
-							SwootyUtils.log("World", "Night time approaches...");
-						}
+						isDay = true;
+						SwootyUtils.log("World", "Day time returns...");
+					}
+				}else {
+					if (dayCycle < SwootyUtils.WORLD_TIME_CAP) {
+						dayCycle++;
+						worldAlpha = (float)(1.0 - Math.abs((0.002 * dayCycle)));
+					}else {
+						isDay = false;
+						SwootyUtils.log("World", "Night time approaches...");
 					}
 				}
 			}catch (Exception e) {

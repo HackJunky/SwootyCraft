@@ -21,7 +21,7 @@ public class SwootyUtils {
 	static int TILE_SIZE_Y = 32;
 	static int VIEWPORT_TILES_X = ENV_SIZE_X / TILE_SIZE_X;
 	static int VIEWPORT_TILES_Y = (ENV_SIZE_Y / TILE_SIZE_Y) + 1;
-	static int WORLD_TIME_CAP = 512;
+	static int WORLD_TIME_CAP = 500;
 	
 	//Chunk.java Variables
 	static int CHUNK_HEIGHT = 256;

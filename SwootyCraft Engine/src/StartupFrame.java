@@ -67,6 +67,7 @@ public class StartupFrame extends JFrame {
 	String[] usernameSuffix = {"Cat", "Dog", "Wolf", "Rocket", "Sheep", "Goat"};
 
 	public static void main(String[] args) {
+		System.setProperty("java.awt.headless", "true");
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
